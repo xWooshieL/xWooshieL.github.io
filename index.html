@@ -242,19 +242,65 @@ section { padding: 5rem 2rem; max-width: 1100px; margin: 0 auto; }
   overflow: hidden;
   margin-bottom: 1.5rem;
 }
-.player-bar {
+.now-playing {
   display: flex;
   align-items: center;
   gap: 1rem;
   padding: 1rem 1.2rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg3);
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.np-btn {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 1.1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all var(--transition);
+  display: flex; align-items: center; justify-content: center;
+}
+.np-btn:hover { background: var(--accent2); transform: scale(1.06); }
+.np-btn.stop { background: var(--bg1); border: 1px solid var(--border); }
+.np-btn.stop:hover { border-color: var(--accent); }
+.np-info { flex: 1; min-width: 0; }
+.np-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.np-time { font-size: 0.75rem; color: var(--muted); }
+.np-progress-wrap {
+  flex-basis: 100%;
+  height: 4px;
+  background: var(--bg0);
+  border-radius: 2px;
+  cursor: pointer;
+  overflow: hidden;
+}
+.np-progress { height: 100%; width: 0%; background: var(--accent); transition: width 0.15s linear; }
+.np-vol { display: flex; align-items: center; gap: 0.5rem; }
+.np-vol input[type=range] { width: 90px; accent-color: var(--accent); cursor: pointer; }
+.player-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1.2rem;
   cursor: pointer;
   transition: background var(--transition);
 }
-.player-bar:hover { background: var(--bg3); }
-.player-num { color: var(--accent); font-size: 0.8rem; font-weight: 600; width: 24px; text-align: right; }
-.player-title { flex: 1; font-size: 0.9rem; }
-.player-duration { color: var(--muted); font-size: 0.78rem; }
-.player-play { color: var(--accent); font-size: 1rem; }
+.player-bar:hover, .player-bar.current { background: var(--bg3); }
+.player-bar.current .player-title { color: var(--accent2); }
+.player-num { color: var(--accent); font-size: 0.8rem; font-weight: 600; width: 24px; text-align: right; flex-shrink: 0; }
+.player-title { flex: 1; font-size: 0.9rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.player-duration { color: var(--muted); font-size: 0.78rem; flex-shrink: 0; }
+.player-play { color: var(--accent); font-size: 1rem; width: 18px; flex-shrink: 0; }
 
 audio { display: none; }
 
@@ -327,11 +373,17 @@ audio { display: none; }
   color: var(--text);
   font-size: 0.88rem;
   transition: all var(--transition);
+  min-width: 0;
+}
+.contact-card span:last-child {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .contact-card:hover { border-color: var(--accent); background: var(--bg2); }
 .contact-icon {
   font-size: 1.3rem;
   width: 36px;
+  flex-shrink: 0;
   text-align: center;
 }
 
@@ -557,7 +609,7 @@ footer {
 <section id="music">
   <h2 class="section-title">Music</h2>
   <div class="album-header">
-    <img src="assets/img/cover-kek.jpg" alt="Ubiistvo cover" class="album-cover">
+    <img src="assets/img/cover.png" alt="Ubiistvo cover" class="album-cover">
     <div class="album-info">
       <h3>Ubiistvo. Part 1</h3>
       <p>Malosolnye BAND / novitskiy</p>
@@ -566,6 +618,21 @@ footer {
   </div>
 
   <div class="player" id="player">
+    <div class="now-playing">
+      <button class="np-btn" id="btn-play" title="Play / Pause">&#9654;</button>
+      <button class="np-btn stop" id="btn-stop" title="Stop">&#9632;</button>
+      <div class="np-info">
+        <div class="np-title" id="np-title">Выбери трек</div>
+        <div class="np-time" id="np-time">0:00 / 0:00</div>
+      </div>
+      <div class="np-vol">
+        <span title="Volume">&#128266;</span>
+        <input type="range" id="np-vol" min="0" max="100" value="80">
+      </div>
+      <div class="np-progress-wrap" id="np-progress-wrap">
+        <div class="np-progress" id="np-progress"></div>
+      </div>
+    </div>
   </div>
 
   <div class="music-links">
@@ -659,22 +726,34 @@ footer {
 
 <script>
 const TRACKS = [
-  { num: 1,  title: "Nachalo",               duration: "1:xx" },
-  { num: 2,  title: "Ubiistvo",              duration: "3:xx" },
-  { num: 3,  title: "Menshe chem lyubov",    duration: "3:xx" },
-  { num: 4,  title: "Pепел-serotonin",       duration: "4:xx" },
-  { num: 5,  title: "Vladivostok",           duration: "3:xx" },
-  { num: 6,  title: "43.0796 131.8436",      duration: "1:xx" },
-  { num: 7,  title: "Dyry",                  duration: "3:xx" },
-  { num: 8,  title: "Ya pozabyl o tebe",     duration: "4:xx" },
-  { num: 9,  title: "Panicheskaya privyazannost", duration: "3:xx" },
-  { num: 8,  title: "Ya pozabyl o tebe — Novye glavy", duration: "4:xx" },
-  { num: 9,  title: "Panicheskaya privyazannost",      duration: "3:xx" },
-  { num: 10, title: "MULTI.lv",                        duration: "3:xx" },
-  { num: 11, title: "Nashe poslednee leto avgust 2025", duration: "4:xx" },
-  { num: 12, title: "Skripy pustoty",                  duration: "3:xx" },
+  { num: 1,  title: "Начало" },
+  { num: 2,  title: "Убийство" },
+  { num: 3,  title: "Меньше, чем любовь" },
+  { num: 4,  title: "Пепел-серотонин" },
+  { num: 5,  title: "Владивосток" },
+  { num: 6,  title: "43.0796 131.8436 (интелюдия)" },
+  { num: 7,  title: "Дыры" },
+  { num: 8,  title: "Я позабыл о тебе. Новые главы" },
+  { num: 9,  title: "Паническая привязанность" },
+  { num: 11, title: "Наше последнее лето, август 2025" },
+  { num: 12, title: "Скрипы пустоты" },
 ];
-let current = null;
+let audio = null;
+let currentNum = null;
+
+const btnPlay = document.getElementById('btn-play');
+const btnStop = document.getElementById('btn-stop');
+const npTitle = document.getElementById('np-title');
+const npTime  = document.getElementById('np-time');
+const npProg  = document.getElementById('np-progress');
+const npWrap  = document.getElementById('np-progress-wrap');
+const npVol   = document.getElementById('np-vol');
+
+function fmt(s) {
+  if (!isFinite(s)) return "0:00";
+  const m = Math.floor(s / 60), ss = Math.floor(s % 60);
+  return m + ":" + String(ss).padStart(2, "0");
+}
 
 function buildPlayer() {
   const container = document.getElementById('player');
@@ -684,23 +763,123 @@ function buildPlayer() {
     bar.innerHTML = `
       <span class="player-num">${t.num}</span>
       <span class="player-title">${t.title}</span>
-      <span class="player-duration">${t.duration}</span>
-      <span class="player-play">${current === t.num ? '||' : '>'}</span>
+      <span class="player-duration" data-dur="${t.num}">--:--</span>
+      <span class="player-play"></span>
     `;
-    bar.addEventListener('click', () => play(t));
+    bar.addEventListener('click', () => playTrack(t.num));
     container.appendChild(bar);
   });
 }
 
-function play(t) {
-  if (current === t.num) return;
-  const audio = new Audio(`assets/music/track${String(t.num).padStart(2,'0')}.mp3`);
-  current = t.num;
+function srcOf(n) { return `assets/music/track${String(n).padStart(2, '0')}.mp3`; }
+
+function playTrack(n) {
+  if (currentNum === n && audio) {
+    // toggle pause
+    if (audio.paused) { audio.play(); } else { audio.pause(); }
+    updateUI();
+    return;
+  }
+  if (audio) { audio.pause(); }
+  audio = new Audio(srcOf(n));
+  audio.volume = npVol.value / 100;
+  currentNum = n;
+  audio.addEventListener('timeupdate', onTime);
+  audio.addEventListener('ended', onNext);
+  audio.addEventListener('loadedmetadata', () => {
+    const el = document.querySelector(`[data-dur="${n}"]`);
+    if (el) el.textContent = fmt(audio.duration);
+    onTime();
+  });
   audio.play().catch(() => {});
+  updateUI();
+}
+
+function onNext() {
+  const list = TRACKS.map(t => t.num);
+  const i = list.indexOf(currentNum);
+  const next = list[i + 1];
+  if (next) playTrack(next);
+  else stopAll();
+}
+
+function onTime() {
+  if (!audio) return;
+  npTime.textContent = fmt(audio.currentTime) + " / " + fmt(audio.duration);
+  npProg.style.width = (audio.currentTime / audio.duration * 100 || 0) + "%";
+}
+
+function stopAll() {
+  if (audio) { audio.pause(); audio.currentTime = 0; }
+  npTime.textContent = "0:00 / 0:00";
+  npProg.style.width = "0%";
+  updateUI();
+}
+
+function updateUI() {
+  const t = TRACKS.find(t => t.num === currentNum);
+  npTitle.textContent = t ? (audio && !audio.paused ? "▶ " + t.title : "|| " + t.title + " (пауза)") : "Выбери трек";
+  btnPlay.innerHTML = (audio && !audio.paused && currentNum) ? "&#10074;&#10074;" : "&#9654;";
   document.querySelectorAll('.player-bar').forEach((bar, i) => {
-    bar.querySelector('.player-play').textContent = (i + 1) === t.num ? '||' : '>';
+    const track = TRACKS[i];
+    bar.classList.toggle('current', track.num === currentNum);
+    bar.querySelector('.player-play').textContent =
+      track.num === currentNum ? ((audio && !audio.paused) ? "||" : ">") : "";
   });
 }
+
+btnPlay.addEventListener('click', () => {
+  if (!audio) { playTrack(TRACKS[0].num); return; }
+  if (audio.paused) { audio.play(); } else { audio.pause(); }
+  updateUI();
+});
+btnStop.addEventListener('click', stopAll);
+npVol.addEventListener('input', () => { if (audio) audio.volume = npVol.value / 100; });
+npWrap.addEventListener('click', (e) => {
+  if (!audio || !isFinite(audio.duration)) return;
+  const rect = npWrap.getBoundingClientRect();
+  audio.currentTime = (e.clientX - rect.left) / rect.width * audio.duration;
+});
+
+// Preload durations for track list
+TRACKS.forEach(t => {
+  const a = new Audio();
+  a.preload = "metadata";
+  a.src = srcOf(t.num);
+  a.addEventListener('loadedmetadata', () => {
+    const el = document.querySelector(`[data-dur="${t.num}"]`);
+    if (el) el.textContent = fmt(a.duration);
+  });
+});
+
+// Active nav link on scroll
+const sections = document.querySelectorAll('section[id], #hero');
+const navLinks = document.querySelectorAll('nav a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 120) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+  });
+});
+
+// Reveal on scroll
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.style.opacity = 1;
+      e.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.project-card, .achievement-item, .contact-card, .skill-tag, .graph-node').forEach(el => {
+  el.style.opacity = 0;
+  el.style.transform = 'translateY(14px)';
+  el.style.transition = 'opacity 0.5s ease, transform 0.5s ease, border-color 0.25s ease, background 0.25s ease';
+  io.observe(el);
+});
 
 buildPlayer();
 </script>
